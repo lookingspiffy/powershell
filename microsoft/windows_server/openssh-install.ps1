@@ -45,7 +45,7 @@ Set-Service -Name sshd -StartupType 'Automatic'
 Get-NetFirewallRule -Name "*ssh*"
 if((Get-NetFirewallRule -name "OpenSSH-Server-In-TCP").Enabled -eq $true){}
 
-switch(Get-NetFirewallRule -name "OpenSSH-Server-In-TCP"){
+switch(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP"){
     {$_.enabled -eq $true}  {Write-Host "Firewall rule OpenSSH-Server-In-TCP is enabled."}
     {$_.enabled -eq $false} {
             Write-Host "Firewall rule OpenSSH-Server-In-TCP is not enabled. Attempting to enable."
@@ -56,7 +56,10 @@ switch(Get-NetFirewallRule -name "OpenSSH-Server-In-TCP"){
                 Write-Host "Failed enabling firewall rule OpenSSH-Server-In-TCP."
             }
         }
-    default {Write-Host "Firewall rule OpenSSH-Server-In-TCP not found."}
+    default {
+        Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' not found. Attempting to create..."
+        New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+    }
 }
 
 # Fix permissions to enable password verification
